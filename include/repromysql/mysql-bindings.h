@@ -1,0 +1,261 @@
+#ifndef _MOL_DEF_GUARD_DEFINE_MOD_HTTP_REQUEST_MYSQL_BIND_DEF_GUARD_
+#define _MOL_DEF_GUARD_DEFINE_MOD_HTTP_REQUEST_MYSQL_BIND_DEF_GUARD_
+
+#include "priocpp/common.h"
+#include "priocpp/task.h"
+#include "reprocpp/promise.h"
+#include <my_global.h>
+#include <mysql.h>
+  
+//////////////////////////////////////////////////////////////
+
+
+namespace repromysql {
+
+
+///////////////////////////////////////////////////////////////
+
+
+class ResultSet
+{
+public:
+	typedef repro::Future<ResultSet> FutureType;
+
+	ResultSet(MYSQL_RES* res);
+
+	bool fetch();
+
+	char* operator[](size_t i);
+
+	int num_fields();
+
+private:
+	 std::shared_ptr<MYSQL_RES> result_;
+	 int num_fields_;
+	 MYSQL_ROW row_;
+};
+
+///////////////////////////////////////////////////////////////
+
+
+class Binding
+{
+friend class Statement;
+public:
+
+	Binding();
+	~Binding();
+
+	bool null() const
+	{
+		if (is_null_)
+			return true;
+		return false;
+	}
+
+	bool err() const
+	{
+		if (is_err_)
+			return true;
+		return false;
+	}
+
+	void bind(MYSQL_BIND& bind );
+
+	enum_field_types type() const { return type_; }
+protected:
+
+	void init();
+
+	Binding(const Binding& rhs)
+		: type_(rhs.type_),
+		  buf_(rhs.buf_),
+		  maxlen_(rhs.maxlen_),
+		  is_null_(rhs.is_null_),
+		  is_err_(rhs.is_err_),
+		  u_(rhs.u_)
+	{}
+
+
+	enum_field_types	type_;
+	std::shared_ptr<char> buf_;
+	long unsigned int	maxlen_;
+	my_bool				is_null_;
+	my_bool				is_err_;
+
+	union
+	{
+		int					intval_;
+		double				doubleval_;
+		long long int		longlongval_;
+		MYSQL_TIME			timeval_;
+		long unsigned int	strlen_;
+	} u_;
+};
+
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+
+class Param : public Binding
+{
+public:
+	Param();
+	Param( enum_field_types type, int size );
+
+	void set( const std::string& s, enum_field_types type= MYSQL_TYPE_STRING);
+	void set( const char* s, enum_field_types type= MYSQL_TYPE_STRING);
+	void set( MYSQL_TIME& ts, enum_field_types type= MYSQL_TYPE_DATETIME);
+
+	template<class T>
+	void set( T t, enum_field_types type = MYSQL_TYPE_LONG  )
+	{
+		type_ = type;
+		switch(type_)
+		{
+			case MYSQL_TYPE_TINY:
+			case MYSQL_TYPE_SHORT:
+			case MYSQL_TYPE_LONG:
+			{
+				u_.intval_ = t;
+				break;
+			}
+			case MYSQL_TYPE_LONGLONG:
+			case MYSQL_TYPE_INT24:
+			{
+				u_.longlongval_ = t;
+				break;
+			}
+			case MYSQL_TYPE_FLOAT:
+			case MYSQL_TYPE_DOUBLE:
+			{
+				u_.doubleval_ = t;
+				break;
+			}
+			case MYSQL_TYPE_TIME:
+			case MYSQL_TYPE_DATE:
+			case MYSQL_TYPE_DATETIME:
+			case MYSQL_TYPE_TIMESTAMP:
+			{
+				memset(&u_.timeval_,0,sizeof(MYSQL_TIME));
+				u_.timeval_.second = t;
+				break;
+			}
+			case MYSQL_TYPE_VAR_STRING:
+			case MYSQL_TYPE_STRING:
+			case MYSQL_TYPE_BLOB:
+			{
+				std::ostringstream oss;
+				oss << t;
+				std::string s = oss.str();
+
+				int n = s.size()+1;
+				char* buf = new char[n];
+				strncpy(buf,s.c_str(),n);
+				buf_.reset(buf,[](const char* c){delete[] c;});
+				u_.strlen_ = s.size();
+				break;
+			}
+			default :
+			{
+				throw repro::Ex("(long) unsupporteed mysql data type");
+				break;
+			}
+		}
+	}
+
+
+	void setNull();
+};
+
+///////////////////////////////////////////////////////////////
+
+class Retval : public Binding
+{
+public:
+
+	Retval( enum_field_types type, int size = 256 );
+
+	Retval(const Retval& rhs)
+		: Binding(rhs)
+	{}
+
+	~Retval() {}
+
+	bool operator()();
+
+	const std::string getString() const;
+	const int getInt() const;
+	const float getFloat() const;
+	const double getDouble() const;
+	const MYSQL_TIME& getTime() const;
+	const long long int getLongLong() const;
+
+	template<class T>
+	const T getNumber() const
+	{
+		if(null()){
+			return 0;
+		}
+
+		switch( type_ )
+		{
+			case MYSQL_TYPE_TINY:
+			case MYSQL_TYPE_SHORT:
+			case MYSQL_TYPE_LONG:
+			{
+				return u_.intval_;
+			}
+			case MYSQL_TYPE_FLOAT:
+			case MYSQL_TYPE_DOUBLE:
+			{
+				return u_.doubleval_;
+			}
+			case MYSQL_TYPE_LONGLONG:
+			case MYSQL_TYPE_INT24:
+			{
+				return u_.longlongval_;
+			}
+			case MYSQL_TYPE_TIME:
+			case MYSQL_TYPE_DATE:
+			case MYSQL_TYPE_DATETIME:
+			case MYSQL_TYPE_TIMESTAMP:
+			{
+				return 0;
+			}
+			case MYSQL_TYPE_VAR_STRING:
+			case MYSQL_TYPE_STRING:
+			case MYSQL_TYPE_BLOB:
+			{
+				if (!buf_.get())
+					return 0;
+				if (is_err_)
+					return 0;
+
+				std::istringstream iss( buf_.get() );
+				T t;
+				iss >> t;
+				return t;
+			}
+			case MYSQL_TYPE_NULL:
+			{
+				return 0;
+			}
+			default :
+			{
+				throw repro::Ex("unsupporteed mysql data type");
+				break;
+			}
+
+		}
+		return 0;
+	}
+
+};
+
+//////////////////////////////////////////////////////////////
+
+
+}
+
+#endif
+

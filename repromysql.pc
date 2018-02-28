@@ -1,0 +1,10 @@
+prefix=/usr/local
+includedir=${prefix}/include
+libdir=${prefix}/lib
+
+Name: promise-mysql
+Description: The c++ promise-mysql library
+Version: 1.0.0
+Cflags: -I${includedir}
+Libs: -L${libdir} -lpromise-mysql -lpriocpp -lmysqlclient
+
