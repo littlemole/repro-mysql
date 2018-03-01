@@ -4,8 +4,8 @@
 #include "priocpp/common.h"
 #include "priocpp/task.h"
 #include "reprocpp/promise.h"
-#include <my_global.h>
-#include <mysql.h>
+#include <mysql/my_global.h>
+#include <mysql/mysql.h>
   
 //////////////////////////////////////////////////////////////
 

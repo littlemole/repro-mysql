@@ -1,5 +1,6 @@
 ############################################
 cmake_minimum_required(VERSION 2.8.9)
+cmake_policy(SET CMP0054 NEW)
 project(repromysql)
 include(CTest)
 
@@ -54,15 +55,15 @@ find_package(OpenSSL REQUIRED)
 IF (WIN32)
 
 	set(OSLIBS "Ws2_32" "Rpcrt4")
-
 	find_library(PRIOCPP_LIBRARY NAMES priocpp)
 	find_library(PRIOCPPD_LIBRARY NAMES priocppd)
 	find_library(REDIS_LIBRARY NAMES hiredis)
 	find_library(INTEROP_LIBRARY NAMES Win32_Interop)
 	find_library(LIBEVENT_LIBRARY NAMES event)
 	find_library(MYSQL_LIBRARY NAMES libmysql)
+	find_path(MYSQL_PATH mysql/mysql.h)
 
-	set(BUILDFLAGS "-await ${FLAGS}")
+	set(BUILDFLAGS "-await ${FLAGS} -I${MYSQL_PATH}/mysql")
 	set(DEBUGFLAGS "-DMOL_PROMISE_DEBUG")
 
 	set(LIBS ${PRIOCPP_LIBRARY} ${CRYPTONEAT_LIBRARY} ${GTEST_LIBRARIES} ${OPENSSL_LIBRARIES} ${MYSQL_LIBRARY} ${INTEROP_LIBRARY} ${STDLIB} )

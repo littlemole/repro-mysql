@@ -16,12 +16,7 @@
 #include "repromysql/mysql-async.h"
 #include "test.h"
 #include <stdio.h>
- 
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <crypt.h>
+#include <signal.h>
 
 using namespace prio;
 using namespace repromysql;
