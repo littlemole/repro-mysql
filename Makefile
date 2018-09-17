@@ -61,12 +61,12 @@ install: remove ## installs lib to $(DESTDIR)/$(PREFIX) defaults to /usr/local
 	-rm -rf $(DESTDIR)/$(PREFIX)/include/$(LIBNAME)
 	cd src && make clean && make -e -f Makefile 
 	cd t && make clean && make -e -f Makefile 
-	make run-tests
+	#make run-tests
 	make build
 	cp -r ./build/* $(DESTDIR)/$(PREFIX)	
 	cd src && make clean && make release -e -f Makefile 
 	cd t && make clean && make release -e -f Makefile 
-	make run-tests
+	#make run-tests
 	make build
 	cp -r ./build/* $(DESTDIR)/$(PREFIX)	
 
@@ -116,3 +116,4 @@ help:
 	@grep -E -h '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: build help rmi rmc stop bash image clean-image release remove install test clean test-build
+
