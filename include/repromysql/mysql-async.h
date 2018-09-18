@@ -46,6 +46,9 @@ public:
 	template<class ...Args>
 	repro::Future<std::shared_ptr<mysql_async>> execute(std::string sql, Args ... args);
 
+	template<class F>
+	repro::Future<> tx( F fun );
+
 	repro::Future<ResourcePtr> get();
 	repro::Future<ResourcePtr> operator()();
 
@@ -313,6 +316,46 @@ repro::Future<mysql_async::Ptr> MysqlPool::execute(std::string sql, Args ... arg
 	return p.future();
 }
 
+
+template<class F>
+repro::Future<> MysqlPool::tx(F fun)
+{
+	auto p = repro::promise<>();
+
+	con()
+	.then( [p,fun](mysql_async::Ptr m)
+	{
+		m->tx_start()
+		.then( [p,fun](mysql_async::Ptr a)
+		{
+			return fun(a); // must be async			
+		})
+		.then( [p,m]()
+		{
+			return m->commit();		
+		})
+		.then( [p](mysql_async::Ptr)
+		{
+			prio::nextTick([p](){ p.resolve(); });
+
+		})
+		.otherwise( [p,m](const std::exception& ex)
+		{
+			repro::WrappedException we(ex);
+			m->rollback()
+			.then([p,we](mysql_async::Ptr a)
+			{
+				p.reject(we);
+			});
+		});
+	})
+	.otherwise( [p](const std::exception& ex)
+	{
+		p.reject(ex);
+	});
+
+	return p.future();
+}
 
 }
 

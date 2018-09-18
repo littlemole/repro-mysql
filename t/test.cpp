@@ -294,6 +294,61 @@ TEST_F(BasicTest, SimpleCombinedDoubleAsyncSqlStatement)
 	MOL_TEST_ASSERT_CNTS(0,0);
 }
 
+TEST_F(BasicTest, TxSimple)
+{
+
+	signal(SIGINT).then([](int s){ std::cout << "SIGINT" << std::endl; theLoop().exit(); });
+
+	MysqlPool pool("mysql://test:test@localhost/test");
+
+	int cnt = 0;
+
+	{
+		pool.execute("DELETE from test where id > 2")
+		.then( [&pool,&cnt](mysql_async::Ptr m) 
+		{
+			return pool.tx( [&cnt](mysql_async::Ptr m)
+			{
+				std::cout << "insert" << std::endl;
+
+				auto p = repro::promise<>();
+				m->execute("INSERT INTO test (item,value) VALUES(?,?)", "test", "test")
+				.then( [p](mysql_async::Ptr m)
+				{
+					p.resolve();
+				})
+				.otherwise(reject(p));
+
+				return p.future();
+			});
+		})
+		.then( [&pool]()
+		{
+			std::cout << "select" << std::endl;
+			return pool.query("SELECT count(id) from test where id > ?",2);
+		})			
+		.then( [&cnt](result_async::Ptr r)
+		{
+			std::cout << "result" << std::endl;
+			while(r->fetch())
+			{
+				cnt = r->field(0).getInt();
+			}
+			theLoop().exit();
+		})			
+		.otherwise( [](const std::exception& ex)
+		{
+			std::cout << ex.what() << std::endl;
+			theLoop().exit();
+		});
+	}
+	theLoop().run();
+
+	EXPECT_EQ(1,cnt);
+	MOL_TEST_ASSERT_CNTS(0,0);
+}
+
+
 int main(int argc, char **argv) {
 
 	prio::init();
