@@ -253,7 +253,8 @@ void Param::setNull()
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 
-Retval::Retval( enum_field_types type, int size )
+Retval::Retval(const char* name, enum_field_types type, int size )
+	: name_(name)
 {
 	type_ = type;
 

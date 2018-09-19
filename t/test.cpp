@@ -14,6 +14,7 @@
 #include "priocpp/task.h"
 #include "repromysql/mysql-api.h"
 #include "repromysql/mysql-async.h"
+#include "repromysql/mysql-json.h"
 #include "test.h"
 #include <stdio.h>
 #include <signal.h>
@@ -345,6 +346,36 @@ TEST_F(BasicTest, TxSimple)
 	theLoop().run();
 
 	EXPECT_EQ(1,cnt);
+	MOL_TEST_ASSERT_CNTS(0,0);
+}
+
+TEST_F(BasicTest, SimplJson)
+{
+
+	signal(SIGINT).then([](int s){ std::cout << "SIGINT" << std::endl; theLoop().exit(); });
+
+	MysqlPool pool("mysql://test:test@localhost/test");
+
+	std::string result;
+
+	pool.query("SELECT * from test where id = ?", "1")
+	.then( [&result](result_async::Ptr r)
+	{
+		Json::StreamWriterBuilder wbuilder;
+		wbuilder["commentStyle"] = "None";
+		wbuilder["indentation"] = ""; 		
+		result = Json::writeString(wbuilder, toJson(r));
+		theLoop().exit();
+	})
+	.otherwise( [](const std::exception& ex)
+	{
+		std::cout << ex.what() << std::endl;
+		theLoop().exit();
+	});
+
+	theLoop().run();
+
+	EXPECT_STREQ("[{\"id\":1,\"item\":\"a\",\"value\":\"a value\"}]",result.c_str());
 	MOL_TEST_ASSERT_CNTS(0,0);
 }
 

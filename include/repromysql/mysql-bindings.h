@@ -173,15 +173,17 @@ class Retval : public Binding
 {
 public:
 
-	Retval( enum_field_types type, int size = 256 );
+	Retval( const char* name, enum_field_types type, int size = 256 );
 
 	Retval(const Retval& rhs)
-		: Binding(rhs)
+		: Binding(rhs), name_(rhs.name_)
 	{}
 
 	~Retval() {}
 
 	bool operator()();
+
+	std::string name() const { return name_; }
 
 	const std::string getString() const;
 	const int getInt() const;
@@ -249,7 +251,9 @@ public:
 		}
 		return 0;
 	}
-
+	
+private:
+	std::string name_;
 };
 
 //////////////////////////////////////////////////////////////

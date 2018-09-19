@@ -246,7 +246,7 @@ result::result(std::shared_ptr<statement> st)
 		memset(&(bind_.get()[i]),0,sizeof(MYSQL_BIND));
 
 		MYSQL_FIELD* field = st->field(i);
-		fields_.push_back( std::make_shared<Retval>( field->type, field->length) );
+		fields_.push_back( std::make_shared<Retval>( field->name, field->type, field->length) );
 		fields_[i].get()->bind(bind_.get()[i]);
 	}
 	if (mysql_stmt_store_result(st->st()))
