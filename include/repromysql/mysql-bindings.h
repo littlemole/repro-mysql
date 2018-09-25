@@ -7,6 +7,12 @@
 //#include <mysql/my_global.h>
 #include <mysql/mysql.h>
   
+
+#if LIBMYSQL_VERSION_ID > 7999
+#define my_bool bool
+#else
+#define my_bool char
+#endif
 //////////////////////////////////////////////////////////////
 
 
