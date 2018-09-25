@@ -80,8 +80,8 @@ protected:
 	enum_field_types	type_;
 	std::shared_ptr<char> buf_;
 	long unsigned int	maxlen_;
-	bool				is_null_;
-	bool				is_err_;
+	char				is_null_;
+	char				is_err_;
 
 	union
 	{
