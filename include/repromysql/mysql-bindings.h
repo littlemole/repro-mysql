@@ -9,9 +9,9 @@
   
 
 #if LIBMYSQL_VERSION_ID > 7999
-#define my_bool bool
+#define mybool bool
 #else
-#define my_bool char
+#define mybool my_bool
 #endif
 //////////////////////////////////////////////////////////////
 
@@ -86,8 +86,8 @@ protected:
 	enum_field_types	type_;
 	std::shared_ptr<char> buf_;
 	long unsigned int	maxlen_;
-	my_bool				is_null_;
-	my_bool				is_err_;
+	mybool				is_null_;
+	mybool				is_err_;
 
 	union
 	{
