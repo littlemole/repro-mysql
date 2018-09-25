@@ -4,7 +4,7 @@
 #include "priocpp/common.h"
 #include "priocpp/task.h"
 #include "reprocpp/promise.h"
-#include <mysql/my_global.h>
+//#include <mysql/my_global.h>
 #include <mysql/mysql.h>
   
 //////////////////////////////////////////////////////////////
@@ -80,8 +80,8 @@ protected:
 	enum_field_types	type_;
 	std::shared_ptr<char> buf_;
 	long unsigned int	maxlen_;
-	my_bool				is_null_;
-	my_bool				is_err_;
+	bool				is_null_;
+	bool				is_err_;
 
 	union
 	{
