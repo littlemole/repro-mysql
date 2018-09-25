@@ -49,13 +49,13 @@ endif()
 
 IF (WIN32)
 
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
-endif()
+	if(NOT CMAKE_BUILD_TYPE)
+	  set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
+	endif()
 
-message("+++++++++++++++++")
-message("${CMAKE_BUILD_TYPE}")
-message("+++++++++++++++++")
+	message("+++++++++++++++++")
+	message("${CMAKE_BUILD_TYPE}")
+	message("+++++++++++++++++")
 
 	set(OSLIBS "Ws2_32" "Rpcrt4" "Shlwapi")
 	set(BUILDFLAGS "-await ${FLAGS}")
@@ -66,6 +66,8 @@ message("+++++++++++++++++")
 	find_library(MYSQL_LIBRARY NAMES libmysql)
 
 	find_path(MYSQL_PATH mysql/mysql.h)
+
+	set(MYSQL_INCLUDE_DIRS "${MYSQL_PATH}")
 
 	set(LIBS ${GTEST_LIBRARIES} ${OPENSSL_LIBRARIES} ${STDLIB}  )
 
