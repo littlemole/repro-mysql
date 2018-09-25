@@ -8,7 +8,7 @@
 #include <mysql/mysql.h>
   
 
-#if LIBMYSQL_VERSION_ID > 7999
+#if LIBMYSQL_VERSION_ID > 79999
 #define mybool bool
 #else
 #define mybool my_bool
