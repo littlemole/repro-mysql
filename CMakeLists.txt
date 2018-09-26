@@ -80,7 +80,6 @@ IF (WIN32)
 		find_library(PRIOCPP_LIBRARY NAMES priocpp)
 
 		find_library(PRIOCPP_LIBRARY NAMES priocpp)
-		find_library(PRIOHTTP_LIBRARY NAMES priohttp)
 		find_library(NG2HTTP_LIBRARY NAMES nghttp2)
 		find_library(LIBEVENT_LIBRARY NAMES event)
 		find_library(CRYPTONEAT_LIBRARY NAMES cryptoneat)
@@ -91,7 +90,6 @@ IF (WIN32)
 
 		set(LIBS debug ${CMAKE_PROJECT_NAME} optimized ${CMAKE_PROJECT_NAME} 
 			${PRIOCPP_LIBRARY} 
-			${PRIOHTTP_LIBRARY} 
 			${REPROCURL_LIBRARY} 
 			${CRYPTONEAT_LIBRARY} 
 			${NG2HTTP_LIBRARY} 
@@ -102,13 +100,9 @@ IF (WIN32)
 			${LIBS} 
 		)
     else()
-    	find_library(PRIOCPP_LIBRARY NAMES priocpp.lib)
-    	find_library(PRIOCPPD_LIBRARY NAMES priocppd.lib)
 
 		find_library(PRIOCPP_LIBRARY NAMES priocpp)
 		find_library(PRIOCPPD_LIBRARY NAMES priocppd)
-		find_library(PRIOHTTP_LIBRARY NAMES priohttp)
-		find_library(PRIOHTTPD_LIBRARY NAMES priohttpd)
 		find_library(NG2HTTP_LIBRARY NAMES nghttp2)
 		find_library(LIBEVENT_LIBRARY NAMES event)
 		find_library(CRYPTONEAT_LIBRARY NAMES cryptoneat)
@@ -120,11 +114,13 @@ IF (WIN32)
 		find_library(ZLIB_LIBRARY NAMES zlib.lib)
 		find_library(ZLIBD_LIBRARY NAMES zlibd.lib)
 
+	message("+++++++++++++++++")
+	message("CRYPTONEATD: ${CRYPTONEATD_LIBRARY}")
+	message("+++++++++++++++++")
 
 		set(LIBS debug ${CMAKE_PROJECT_NAME} optimized ${CMAKE_PROJECT_NAME} debug ${PRIOCPPD_LIBRARY} optimized  ${PRIOCPP_LIBRARY} 
 
 			debug ${PRIOCPPD_LIBRARY} optimized ${PRIOCPP_LIBRARY} 
-			debug ${PRIOHTTPD_LIBRARY} optimized ${PRIOHTTP_LIBRARY} 
 			debug ${CRYPTONEATD_LIBRARY} optimized ${CRYPTONEAT_LIBRARY} 
 			debug ${REPROCURLD_LIBRARY} optimized ${REPROCURL_LIBRARY}
 			${NG2HTTP_LIBRARY}
@@ -145,7 +141,6 @@ IF (WIN32)
     pkg_check_modules(CURL REQUIRED libcurl)
     pkg_check_modules(NGHTTP2 REQUIRED libnghttp2)
     pkg_check_modules(PRIOCPP REQUIRED priocpp)
-    pkg_check_modules(PRIOHTTP REQUIRED priohttp)
     pkg_check_modules(REPROCURL REQUIRED reprocurl)
     pkg_check_modules(LIBEVENT REQUIRED libevent_pthreads)
     pkg_check_modules(CRYPTONEAT REQUIRED cryptoneat)
@@ -158,7 +153,6 @@ IF (WIN32)
 
     set(LIBS 
 		debug reprocurld optimized reprocurl 
-		debug priohttpd optimized priohttp 
 		debug priocppd optimized priocpp 
 		debug cryptoneatd optimized cryptoneat 
 		${GTEST_LIBRARIES} ${OPENSSL_LIBRARIES} ${NGHTTP2_LIBRARIES} ${CURL_LIBRARIES} ${MYSQL_LIBRARIES} ${JSONCPP_LIBRARIES} ${STDLIB} z
