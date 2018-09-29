@@ -1,5 +1,5 @@
 # This is a comment
-FROM littlemole/devenv_clangpp_cmake
+FROM littlemole/devenv_gpp_make
 MAINTAINER me <little.mole@oha7.org>
 
 # std dependencies

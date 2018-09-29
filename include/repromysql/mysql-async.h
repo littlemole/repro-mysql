@@ -341,11 +341,21 @@ repro::Future<> MysqlPool::tx(F fun)
 		})
 		.otherwise( [p,m](const std::exception& ex)
 		{
-			repro::WrappedException we(ex);
-			m->rollback()
-			.then([p,we](mysql_async::Ptr a)
+			std::exception_ptr eptr;
+			const repro::Ex* rex = dynamic_cast<const repro::Ex*>(&ex);
+			if ( rex)
 			{
-				p.reject(we);
+				eptr = rex->make_exception_ptr();
+			}
+			else
+			{
+				eptr = std::make_exception_ptr(ex);
+			}
+
+			m->rollback()
+			.then([p,eptr](mysql_async::Ptr a)
+			{
+				p.reject(eptr);
 			});
 		});
 	})
