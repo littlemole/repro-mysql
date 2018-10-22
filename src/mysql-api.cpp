@@ -3,6 +3,22 @@
 
 namespace repromysql {
 
+MySQL::MySQL()
+{
+	mysql_library_init(0,0,0);
+	mysql_thread_init();
+
+    prio::theLoop().onThreadStart([]()
+    {
+    	mysql_thread_init();
+    });
+    prio::theLoop().onThreadShutdown([]()
+    {
+    	mysql_thread_end();
+    });	
+}
+
+
 mysql::mysql()
 	: con_(nullptr), id_(0)
 {
