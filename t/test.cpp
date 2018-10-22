@@ -382,7 +382,7 @@ TEST_F(BasicTest, SimplJson)
 
 int main(int argc, char **argv) {
 
-	prio::Libraries<prio::EventLoop,MySQL> init;
+	prio::Libraries<repromysql::MySQL,prio::EventLoop> init;
 
     ::testing::InitGoogleTest(&argc, argv);
 

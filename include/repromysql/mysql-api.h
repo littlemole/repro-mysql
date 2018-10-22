@@ -174,6 +174,8 @@ class MySQL
 {
 public:
 	MySQL();	
+	MySQL(const MySQL& rhs) {};	
+	MySQL(MySQL&& rhs) {};	
 };
 
 //////////////////////////////////////////////////////////////
