@@ -5,7 +5,7 @@ release : override DEBUG = -O3
 DEFAULT_OPTS = -std=c++14
 
 ifneq ($(CXX),g++)
-DEFAULT_OPTS = -std=c++14 -stdlib=libc++ -fcoroutines-ts -D_RESUMABLE_FUNCTIONS_SUPPORTED 
+DEFAULT_OPTS = $(TS) -std=c++14 -stdlib=libc++ -fcoroutines-ts -D_RESUMABLE_FUNCTIONS_SUPPORTED 
 endif
 
 MYSQL_INC = $(shell pkg-config mysqlclient --cflags)
