@@ -323,6 +323,7 @@ repro::Future<MysqlLocator::type*> MysqlLocator::retrieve(const std::string& u)
 			mysql_close(con);
 			throw repro::Ex("mysql connect failed");
 		}
+
 		return con;
 	})
 	.then( [p](type* r)

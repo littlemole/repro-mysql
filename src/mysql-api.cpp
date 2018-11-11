@@ -5,7 +5,6 @@ namespace repromysql {
 
 MySQL::MySQL()
 {
-	std::cout << "mysql init once" << std::endl;
 	mysql_library_init(0,0,0);
 	mysql_thread_init();
 

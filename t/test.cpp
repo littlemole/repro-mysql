@@ -98,18 +98,24 @@ TEST_F(BasicTest, SimpleAsyncSqlStatement)
 
 	std::string result;
 
+	std::cout << "get pool" << std::endl;
+
 	pool.con()
 	.then( [](mysql_async::Ptr m)
 	{
+		std::cout << "got pool" << std::endl;
 		return m->prepare("SELECT value from test where id = ?");
 	})
 	.then( [](statement_async::Ptr stm)
 	{
+		std::cout << "got stm" << std::endl;
 		stm->bind(1,"1");
 		return stm->query();
 	})
 	.then( [&result](result_async::Ptr r)
 	{
+		std::cout << "got result" << std::endl;
+
 		while(r->fetch())
 		{
 			result = r->field(0).getString();
@@ -383,6 +389,8 @@ TEST_F(BasicTest, SimplJson)
 int main(int argc, char **argv) {
 
 	prio::Libraries<repromysql::MySQL,prio::EventLoop> init;
+	//prio::EventLoop loop_init;
+	//repromysql::MySQL mysql_init;
 
     ::testing::InitGoogleTest(&argc, argv);
 
