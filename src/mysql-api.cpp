@@ -40,6 +40,10 @@ mysql::Ptr mysql::connect( const std::string& host, const std::string& user, con
 	{
 		throw repro::Ex("mysql connect failed");
 	}
+	if (mysql_set_character_set(ptr->con(), "utf8"))
+	{
+		throw repro::Ex("mysql connect set utf8 failed");
+	}	
 	return ptr;
 }
 

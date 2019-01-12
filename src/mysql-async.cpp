@@ -323,6 +323,10 @@ repro::Future<MysqlLocator::type*> MysqlLocator::retrieve(const std::string& u)
 			mysql_close(con);
 			throw repro::Ex("mysql connect failed");
 		}
+		if (mysql_set_character_set(con, "utf8"))
+		{
+			throw repro::Ex("mysql connect set utf8 failed");
+		}	
 
 		return con;
 	})
