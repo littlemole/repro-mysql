@@ -120,6 +120,11 @@ inline Json::Value toJson(result_async::Ptr r)
 				case MYSQL_TYPE_STRING:
 				case MYSQL_TYPE_BLOB:
 				{
+					if(r->field(i).null()) 
+					{
+						obj[r->field(i).name()] = Json::Value(Json::nullValue);
+						break;
+					}
 					obj[r->field(i).name()] = r->field(i).getString();
 					break;
 				}

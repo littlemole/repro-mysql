@@ -35,6 +35,10 @@ class BasicTest : public ::testing::Test {
 		m->execute("CREATE TABLE test (id int auto_increment primary key, item varchar(64), value varchar(1024))");
 		m->execute("INSERT INTO test (item, value) VALUES('a','a value')");
 		m->execute("INSERT INTO test (item, value) VALUES('b','b value')");
+
+		m->execute("DROP TABLE  if exists test_null");
+		m->execute("CREATE TABLE test_null (id int auto_increment primary key, datum DATETIME)");
+		m->execute("INSERT INTO test_null (datum) VALUES(NULL)");
   }
 
   virtual void SetUp() {
@@ -60,7 +64,7 @@ TEST_F(BasicTest, SimpleSql)
 	ResultSet r = m->query("show tables;");
 
 	std::string result;
-	while(r.fetch())
+	if(r.fetch())
 	{
 		result = r[0];
 	}
@@ -131,6 +135,52 @@ TEST_F(BasicTest, SimpleAsyncSqlStatement)
 	theLoop().run();
 
 	EXPECT_STREQ("a value",result.c_str());
+	MOL_TEST_ASSERT_CNTS(0,0);
+}
+
+TEST_F(BasicTest, SimpleAsyncSqlStatementNULL)
+{
+
+	signal(SIGINT).then([](int s){ std::cout << "SIGINT" << std::endl; theLoop().exit(); });
+
+	MysqlPool pool("mysql://test:test@localhost/test");
+
+	std::string result;
+
+	std::cout << "get pool" << std::endl;
+
+	pool.con()
+	.then( [](mysql_async::Ptr m)
+	{
+		std::cout << "got pool" << std::endl;
+		return m->prepare("SELECT datum from test_null where id = ?");
+	})
+	.then( [](statement_async::Ptr stm)
+	{
+		std::cout << "got stm" << std::endl;
+		stm->bind(1,"1");
+		return stm->query();
+	})
+	.then( [&result](result_async::Ptr r)
+	{
+		std::cout << "got result" << std::endl;
+
+		Json::Value json = toJson(r);
+		
+
+		result = json[0]["datum"].isNull() ? "NULL" : "NOT NULL";		
+		
+		theLoop().exit();
+	})
+	.otherwise( [](const std::exception& ex)
+	{
+		std::cout << ex.what() << std::endl;
+		theLoop().exit();
+	});
+
+	theLoop().run();
+
+	EXPECT_STREQ("NULL",result.c_str());
 	MOL_TEST_ASSERT_CNTS(0,0);
 }
 
