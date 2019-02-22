@@ -78,6 +78,7 @@ public:
 
 	const int fields() const;
 	const Retval& field(int i) const;
+	const Retval& field(const std::string& name) const;
 
 	std::shared_ptr<statement_async> st();
 	std::shared_ptr<mysql_async> con();

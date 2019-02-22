@@ -292,6 +292,19 @@ const Retval& result_async::field(int i) const
 	return *(fields_[i].get());
 }
 
+
+const Retval& result_async::field(const std::string& name) const
+{
+	for ( unsigned int i = 0; i < fields_.size(); i++)
+	{
+		if( fields_[i].get()->name() == name ) {
+			return field(i);
+		}
+	}
+	throw repro::Ex("unknown SQL field");
+}
+
+
 bool result_async::fetch()
 {
 	if ( mysql_stmt_fetch(st_->st()) )
