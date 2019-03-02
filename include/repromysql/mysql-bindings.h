@@ -149,6 +149,8 @@ public:
 			case MYSQL_TYPE_VAR_STRING:
 			case MYSQL_TYPE_STRING:
 			case MYSQL_TYPE_BLOB:
+			case MYSQL_TYPE_DECIMAL:
+			case MYSQL_TYPE_NEWDECIMAL:
 			{
 				std::ostringstream oss;
 				oss << t;
@@ -233,6 +235,8 @@ public:
 			case MYSQL_TYPE_VAR_STRING:
 			case MYSQL_TYPE_STRING:
 			case MYSQL_TYPE_BLOB:
+			case MYSQL_TYPE_DECIMAL:
+			case MYSQL_TYPE_NEWDECIMAL:
 			{
 				if (!buf_.get())
 					return 0;

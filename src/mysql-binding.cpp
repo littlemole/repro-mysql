@@ -64,6 +64,8 @@ void Binding::bind(MYSQL_BIND& bind )
 		case MYSQL_TYPE_VAR_STRING:
 		case MYSQL_TYPE_STRING:
 		case MYSQL_TYPE_BLOB:
+		case MYSQL_TYPE_DECIMAL:
+		case MYSQL_TYPE_NEWDECIMAL:
 		{
 			bind.buffer 		= buf_.get();
 			bind.buffer_length = maxlen_;
@@ -181,6 +183,8 @@ void Param::set( const std::string& s, enum_field_types type )
 		case MYSQL_TYPE_VAR_STRING:
 		case MYSQL_TYPE_STRING:
 		case MYSQL_TYPE_BLOB:
+		case MYSQL_TYPE_DECIMAL:
+		case MYSQL_TYPE_NEWDECIMAL:
 		{
 			int n = s.size()+1;
 			char* buf = new char[n];
@@ -227,6 +231,8 @@ void Param::set( MYSQL_TIME& ts, enum_field_types type )
 		case MYSQL_TYPE_VAR_STRING:
 		case MYSQL_TYPE_STRING:
 		case MYSQL_TYPE_BLOB:
+		case MYSQL_TYPE_DECIMAL:
+		case MYSQL_TYPE_NEWDECIMAL:
 		{
 			break;
 		}
@@ -263,6 +269,8 @@ Retval::Retval(const char* name, enum_field_types type, int size )
 		case MYSQL_TYPE_VAR_STRING:
 		case MYSQL_TYPE_STRING:
 		case MYSQL_TYPE_BLOB:
+		case MYSQL_TYPE_DECIMAL:
+		case MYSQL_TYPE_NEWDECIMAL:
 		{
 			maxlen_ = u_.strlen_ = size+1;
 			buf_.reset(new char[maxlen_],[](const char* c){delete[] c;});
@@ -335,6 +343,8 @@ const std::string Retval::getString() const
 		case MYSQL_TYPE_VAR_STRING:
 		case MYSQL_TYPE_STRING:
 		case MYSQL_TYPE_BLOB:
+		case MYSQL_TYPE_DECIMAL:
+		case MYSQL_TYPE_NEWDECIMAL:
 		{
 			if (!buf_)
 				return "";

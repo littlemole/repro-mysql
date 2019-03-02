@@ -51,6 +51,8 @@ inline Json::Value toJson(result::Ptr r)
 				case MYSQL_TYPE_VAR_STRING:
 				case MYSQL_TYPE_STRING:
 				case MYSQL_TYPE_BLOB:
+				case MYSQL_TYPE_DECIMAL:
+				case MYSQL_TYPE_NEWDECIMAL:
 				{
 					obj[r->field(i).name()] = r->field(i).getString();
 					break;
