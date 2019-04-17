@@ -362,9 +362,9 @@ TEST_F(BasicTest, TxSimple)
 
 	{
 		pool.execute("DELETE from test where id > 2")
-		.then( [&pool,&cnt](mysql_async::Ptr m) 
+		.then( [&pool](mysql_async::Ptr m) 
 		{
-			return pool.tx( [&cnt](mysql_async::Ptr m)
+			return pool.tx( [](mysql_async::Ptr m)
 			{
 				std::cout << "insert" << std::endl;
 
