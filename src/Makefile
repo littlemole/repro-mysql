@@ -2,30 +2,24 @@
 DEBUG = -g -DMOL_PROMISE_DEBUG
 release : override DEBUG = -O3 
 
-DEFAULT_OPTS = -std=c++14
+DEFAULT_OPTS = -std=c++17
 
 ifneq ($(CXX),g++)
-DEFAULT_OPTS = $(TS) -std=c++14 -stdlib=libc++ -fcoroutines-ts -D_RESUMABLE_FUNCTIONS_SUPPORTED 
+DEFAULT_OPTS = $(TS) -std=c++17 -stdlib=libc++ -fcoroutines-ts -D_RESUMABLE_FUNCTIONS_SUPPORTED 
 endif
 
 MYSQL_INC = $(shell pkg-config mysqlclient --cflags)
 
-OPTIONS = -std=c++14 -pthread -D_REENTRANT $(DEFAULT_OPTS)
+OPTIONS = -pthread -D_REENTRANT $(DEFAULT_OPTS)
 
 PROMISE_IMPL = -DPROMISE_USE_LIBEVENT
-#PROMISE_3DPARTY = -levent
 ifeq ($(BACKEND),boost_asio)
         PROMISE_IMPL = -DPROMISE_USE_BOOST_ASIO
-#        PROMISE_3DPARTY = -lboost_system 
 endif
 
 # compile flags
 CPPFLAGS = -Wall -I../include -I/usr/local/include $(MYSQL_INC) $(DEBUG) $(INCLUDE) $(OPTIONS) $(PROMISE_IMPL)
 
-
-# library flags
-#DEPS =  -lssl -lcrypto 
-#LIBS =   $(DEPS) $(PROMISE_3DPARTY)
 
 #################################################
 # source and build path information
