@@ -15,7 +15,7 @@
 #include "repromysql/mysql-api.h"
 #include "repromysql/mysql-async.h"
 #include "repromysql/mysql-json.h"
-#include "test.h"
+#include "reprocpp/test.h"
 #include <stdio.h>
 #include <signal.h>
 
@@ -58,17 +58,19 @@ class BasicTest : public ::testing::Test {
 
 TEST_F(BasicTest, SimpleSql)
 {
-
-	auto m = repromysql::mysql::connect("localhost","test", "test", "test");
-
-	ResultSet r = m->query("show tables;");
-
-	std::string result;
-	if(r.fetch())
 	{
-		result = r[0];
+		auto m = repromysql::mysql::connect("localhost","test", "test", "test");
+
+		ResultSet r = m->query("show tables;");
+
+		std::string result;
+		if(r.fetch())
+		{
+			result = r[0];
+		}
+
+		EXPECT_STREQ("test",result.c_str());
 	}
-	EXPECT_STREQ("test",result.c_str());
 	MOL_TEST_ASSERT_CNTS(0,0);
 }
 
@@ -76,20 +78,21 @@ TEST_F(BasicTest, SimpleSql)
 
 TEST_F(BasicTest, SimpleSqlStatement)
 {
-
-	auto m = repromysql::mysql::connect("localhost","test", "test", "test");
-
-	auto ps = m->prepare("select count(id) from test");
-
-	auto r = ps->query();
-
-	int i = 0;
-	while(r->fetch())
 	{
-		i = r->field(0).getInt();
-	}
+		auto m = repromysql::mysql::connect("localhost","test", "test", "test");
 
-	EXPECT_EQ(2,i);
+		auto ps = m->prepare("select count(id) from test");
+
+		auto r = ps->query();
+
+		int i = 0;
+		while(r->fetch())
+		{
+			i = r->field(0).getInt();
+		}
+
+		EXPECT_EQ(2,i);
+	}
 	MOL_TEST_ASSERT_CNTS(0,0);
 }
 
@@ -163,10 +166,10 @@ TEST_F(BasicTest, SimpleAsyncSqlStatementNULL)
 	})
 	.then( [&result](result_async::Ptr r)
 	{
-		std::cout << "got result" << std::endl;
-
 		Json::Value json = toJson(r);
 		
+		std::cout << "got result " << json[0]["datum"].asString() << std::endl;
+
 
 		result = json[0]["datum"].isNull() ? "NULL" : "NOT NULL";		
 		

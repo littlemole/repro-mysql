@@ -24,6 +24,9 @@ namespace repromysql {
 class ResultSet
 {
 public:
+
+	LITTLE_MOLE_MONITOR(MysqlResultSets);
+
 	typedef repro::Future<ResultSet> FutureType;
 
 	ResultSet(MYSQL_RES* res);
@@ -104,6 +107,9 @@ protected:
 class Param : public Binding
 {
 public:
+
+	LITTLE_MOLE_MONITOR(MysqlParams);
+
 	Param();
 	Param( enum_field_types type, int size );
 
@@ -179,6 +185,9 @@ public:
 class Retval : public Binding
 {
 public:
+
+	LITTLE_MOLE_MONITOR(MysqlRetvals);
+
 
 	Retval( const char* name, enum_field_types type, int size = 256 );
 

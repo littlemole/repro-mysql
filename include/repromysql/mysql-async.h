@@ -68,6 +68,9 @@ private:
 class result_async : public std::enable_shared_from_this<result_async>
 {
 public:
+
+	LITTLE_MOLE_MONITOR(MysqlAsyncResults);
+
 	typedef std::shared_ptr<result_async> Ptr;
 
 	result_async(std::shared_ptr<statement_async> st);
@@ -97,6 +100,9 @@ class statement_async : public std::enable_shared_from_this<statement_async>
 {
 friend class result;
 public:
+
+	LITTLE_MOLE_MONITOR(MysqlAsyncStatements);
+
 	typedef std::shared_ptr<statement_async> Ptr;
 
 	statement_async(std::shared_ptr<mysql_async> con,MYSQL_STMT* st);
@@ -173,6 +179,9 @@ class mysql_async : public std::enable_shared_from_this<mysql_async>
 friend class statement_async;
 friend class result_async;
 public:
+
+	LITTLE_MOLE_MONITOR(MysqlAsyncs);
+
 
 	typedef std::shared_ptr<mysql_async> Ptr;
 	typedef repro::Future<mysql_async::Ptr> FutureType;
