@@ -108,19 +108,14 @@ TEST_F(BasicTest, SimpleAsyncSqlStatement)
 	std::cout << "get pool" << std::endl;
 
 	pool.con()
-	.then( [](mysql_async::Ptr m)
+	.then( [&result](mysql_async::Ptr m)
 	{
 		std::cout << "got pool" << std::endl;
-		return m->prepare("SELECT value from test where id = ?");
-	})
-	.then( [](statement_async::Ptr stm)
-	{
+		statement_async::Ptr stm = m->prepare("SELECT value from test where id = ?");
+
 		std::cout << "got stm" << std::endl;
 		stm->bind(1,"1");
-		return stm->query();
-	})
-	.then( [&result](result_async::Ptr r)
-	{
+		result_async::Ptr r = stm->query();
 		std::cout << "got result" << std::endl;
 
 		while(r->fetch())
@@ -153,19 +148,14 @@ TEST_F(BasicTest, SimpleAsyncSqlStatementNULL)
 	std::cout << "get pool" << std::endl;
 
 	pool.con()
-	.then( [](mysql_async::Ptr m)
+	.then( [&result](mysql_async::Ptr m)
 	{
 		std::cout << "got pool" << std::endl;
-		return m->prepare("SELECT datum from test_null where id = ?");
-	})
-	.then( [](statement_async::Ptr stm)
-	{
+		statement_async::Ptr stm = m->prepare("SELECT datum from test_null where id = ?");
 		std::cout << "got stm" << std::endl;
 		stm->bind(1,"1");
-		return stm->query();
-	})
-	.then( [&result](result_async::Ptr r)
-	{
+		result_async::Ptr r = stm->query();
+
 		Json::Value json = toJson(r);
 		
 		std::cout << "got result " << json[0]["datum"].asString() << std::endl;

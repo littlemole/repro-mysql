@@ -75,25 +75,20 @@ void mysql_async::close()
 }
 
 
-repro::Future<statement_async::Ptr> mysql_async::prepare(std::string sql)
+statement_async::Ptr mysql_async::prepare(std::string sql)
 {
-	auto ptr = shared_from_this();
+	MYSQL_STMT* stmt = mysql_stmt_init(con());
 
-	return prio::task([ptr,sql](){
+	int mb =  1;
+	mysql_stmt_attr_set( stmt, STMT_ATTR_UPDATE_MAX_LENGTH, &mb);
 
-		MYSQL_STMT* stmt = mysql_stmt_init(ptr->con());
-
-		int mb =  1;
-		mysql_stmt_attr_set( stmt, STMT_ATTR_UPDATE_MAX_LENGTH, &mb);
-
-		if ( mysql_stmt_prepare(stmt, sql.c_str(), sql.size()) )
-		{
-			ptr->mysql_->markAsInvalid();
-			throw repro::Ex("mysql_stmt_prepare failed!");
-		}
-		auto p = std::make_shared<statement_async>(ptr,stmt);
-		return p;
-	});
+	if ( mysql_stmt_prepare(stmt, sql.c_str(), sql.size()) )
+	{
+		mysql_->markAsInvalid();
+		throw repro::Ex("mysql_stmt_prepare failed!");
+	}
+	auto p = std::make_shared<statement_async>(shared_from_this(),stmt);
+	return p;
 }
 
 
@@ -162,73 +157,63 @@ std::shared_ptr<mysql_async> statement_async::con()
 }
 
 
-repro::Future<result_async::Ptr> statement_async::query()
+result_async::Ptr statement_async::query()
 {
-	std::shared_ptr<statement_async> ptr = shared_from_this();
+	mysql_stmt_free_result(stmt_.get());
 
-	return prio::task([ptr](){
-
-		mysql_stmt_free_result(ptr->stmt_.get());
-
-		if ( ptr->param_count_ > 0 )
+	if ( param_count_ > 0 )
+	{
+		for ( int i = 0; i < param_count_; i++)
 		{
-			for ( int i = 0; i < ptr->param_count_; i++)
-			{
-				ptr->params_[i]->bind(ptr->bind_[i]);
-			}
-
-			if (mysql_stmt_bind_param(ptr->stmt_.get(), &(ptr->bind_[0])) )
-			{
-				ptr->con()->mysql_->markAsInvalid();
-				throw repro::Ex("mysql_stmt_bind_param failed!");
-			}
+			params_[i]->bind(bind_[i]);
 		}
 
-		if (mysql_stmt_execute(ptr->stmt_.get()))
+		if (mysql_stmt_bind_param(stmt_.get(), &(bind_[0])) )
 		{
-			ptr->con()->mysql_->markAsInvalid();
-			std::ostringstream oss;
-			oss << "mysql_stmt_execute failed: " << mysql_stmt_error(ptr->stmt_.get());
-			throw repro::Ex(oss.str());
-		};
+			con()->mysql_->markAsInvalid();
+			throw repro::Ex("mysql_stmt_bind_param failed!");
+		}
+	}
 
-		return std::make_shared<result_async>(ptr);
-	});
+	if (mysql_stmt_execute(stmt_.get()))
+	{
+		con()->mysql_->markAsInvalid();
+		std::ostringstream oss;
+		oss << "mysql_stmt_execute failed: " << mysql_stmt_error(stmt_.get());
+		throw repro::Ex(oss.str());
+	};
+
+	return std::make_shared<result_async>(shared_from_this());
 }
 
-repro::Future<mysql_async::Ptr> statement_async::execute()
+mysql_async::Ptr statement_async::execute()
 {
-	auto ptr = shared_from_this();
+	mysql_stmt_free_result(stmt_.get());
 
-	return prio::task([ptr](){
-
-		mysql_stmt_free_result(ptr->stmt_.get());
-
-		if ( ptr->param_count_ > 0 )
+	if ( param_count_ > 0 )
+	{
+		for ( int i = 0; i < param_count_; i++)
 		{
-			for ( int i = 0; i < ptr->param_count_; i++)
-			{
-				ptr->params_[i]->bind(ptr->bind_[i]);
-			}
-
-			if (mysql_stmt_bind_param(ptr->stmt_.get(), &(ptr->bind_[0])) )
-			{
-				ptr->con()->mysql_->markAsInvalid();
-				throw repro::Ex("mysql_stmt_bind_param failed!");
-			}
+			params_[i]->bind(bind_[i]);
 		}
 
-		if (mysql_stmt_execute(ptr->stmt_.get()))
+		if (mysql_stmt_bind_param(stmt_.get(), &(bind_[0])) )
 		{
-			ptr->con()->mysql_->markAsInvalid();
+			con()->mysql_->markAsInvalid();
+			throw repro::Ex("mysql_stmt_bind_param failed!");
+		}
+	}
 
-			std::ostringstream oss;
-			oss << "mysql_stmt_execute failed: " << mysql_stmt_error(ptr->stmt_.get());
-			throw repro::Ex(oss.str());
-		};
+	if (mysql_stmt_execute(stmt_.get()))
+	{
+		con()->mysql_->markAsInvalid();
 
-		return ptr->mysql_;
-	});
+		std::ostringstream oss;
+		oss << "mysql_stmt_execute failed: " << mysql_stmt_error(stmt_.get());
+		throw repro::Ex(oss.str());
+	};
+
+	return mysql_;
 }
 
 

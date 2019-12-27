@@ -136,8 +136,8 @@ public:
 	}
 
 
-	repro::Future<result_async::Ptr> query();
-	repro::Future<std::shared_ptr<mysql_async>> execute();
+	result_async::Ptr query();
+	std::shared_ptr<mysql_async> execute();
 
 	std::shared_ptr<mysql_async> con();
 
@@ -193,52 +193,32 @@ public:
 //	FutureType execute( std::string sql);
 //	ResultSet::FutureType query(std::string sql);
 
-	repro::Future<statement_async::Ptr> prepare(std::string sql);
+	//repro::Future<statement_async::Ptr> prepare(std::string sql);
+
+	statement_async::Ptr prepare(std::string sql);
 
 	template<class ...Args>
 	repro::Future<result_async::Ptr> query(std::string sql, Args ... args)
 	{
-		auto p = repro::promise<result_async::Ptr>();
-
-		prepare(sql)
-		.then( [p,args...](statement_async::Ptr stm)
+		auto ptr = shared_from_this();
+		return prio::task([ptr,sql,args...]()
 		{
+			statement_async::Ptr stm = ptr->prepare(sql);
 			binder(stm,1,args...);
 			return stm->query();
-		})
-		.then( [p](result_async::Ptr r)
-		{
-			p.resolve(r);
-		})
-		.otherwise( [p](const std::exception& ex)
-		{
-			p.reject(ex);
 		});
-
-		return p.future();
 	}
 
 	template<class ...Args>
 	repro::Future<mysql_async::Ptr> execute(std::string sql, Args ... args)
 	{
-		auto p = repro::promise<mysql_async::Ptr>();
-
-		prepare(sql)
-		.then( [p,args...](statement_async::Ptr stm)
+		auto ptr = shared_from_this();
+		return prio::task([ptr,sql,args...]()
 		{
+			statement_async::Ptr stm = ptr->prepare(sql);
 			binder(stm,1,args...);
 			return stm->execute();
-		})
-		.then( [p](mysql_async::Ptr ptr)
-		{
-			p.resolve(ptr);
-		})
-		.otherwise( [p](const std::exception& ex)
-		{
-			p.reject(ex);
 		});
-
-		return p.future();
 	}
 
 	my_ulonglong insert_id();
