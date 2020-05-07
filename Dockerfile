@@ -1,5 +1,5 @@
 # This is a comment
-FROM littlemole/devenv_gpp_make
+FROM littlemole/devenv_clangpp_make
 MAINTAINER me <little.mole@oha7.org>
 
 # std dependencies
@@ -20,9 +20,9 @@ ENV TS=${TS}
 # build dependencies
 ADD ./docker/mysql.sh /usr/local/bin/mysql.sh
 
-RUN /usr/local/bin/install.sh repro 
-RUN /usr/local/bin/install.sh prio 
-RUN /usr/local/bin/install.sh repro-curl 
+RUN BRANCH=ng /usr/local/bin/install.sh repro 
+RUN BRANCH=ng /usr/local/bin/install.sh prio 
+#RUN /usr/local/bin/install.sh repro-curl 
 
 RUN mkdir -p /usr/local/src/repro-mysql
 ADD . /usr/local/src/repro-mysql
