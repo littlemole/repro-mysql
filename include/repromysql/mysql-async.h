@@ -2,7 +2,7 @@
 #define _MOL_DEF_GUARD_DEFINE_MOD_HTTP_REQUEST_MYSQL_ASYNC_DEF_GUARD_
 
 #include "repromysql/mysql-api.h"
-#include "priocpp/res.h"
+#include "priocpp/ResourcePool.h"
 
 //////////////////////////////////////////////////////////////
 
@@ -18,10 +18,10 @@ class statement_async;
 
 struct MysqlLocator
 {
-	typedef MYSQL* type;
+	typedef MYSQL type;
 
-	static repro::Future<type> retrieve(const std::string& url);
-	static void free( type t);
+	static repro::Future<type*> retrieve(const std::string& url);
+	static void free( type* t);
 };
 
 //////////////////////////////////////////////////////////////
@@ -29,7 +29,7 @@ struct MysqlLocator
 class MysqlPool
 {
 public:
-	typedef prio::Resource::Pool<MysqlLocator> Pool;
+	typedef prio::ResourcePool<MysqlLocator> Pool;
 	typedef Pool::ResourcePtr ResourcePtr;
 
 	MysqlPool(const std::string& url, int capacity = 4)
@@ -68,14 +68,14 @@ private:
 class result_async : public std::enable_shared_from_this<result_async>
 {
 public:
+
+	LITTLE_MOLE_MONITOR(MysqlAsyncResults);
+
 	typedef std::shared_ptr<result_async> Ptr;
 
 	result_async(std::shared_ptr<statement_async> st);
 
-	~result_async() 
-	{
-		REPRO_MONITOR_DECR(mysqlAsyncResult);
-	}
+	~result_async() {}
 
 	bool fetch();
 
@@ -87,9 +87,6 @@ public:
 	std::shared_ptr<mysql_async> con();
 
 private:
-
-	result_async(const result_async&) = delete;
-	result_async& operator=(const result_async&) = delete;
 
 	int column_count_;
 	std::vector<std::shared_ptr<Retval>> fields_;
@@ -103,6 +100,8 @@ class statement_async : public std::enable_shared_from_this<statement_async>
 {
 friend class result;
 public:
+
+	LITTLE_MOLE_MONITOR(MysqlAsyncStatements);
 
 	typedef std::shared_ptr<statement_async> Ptr;
 
@@ -181,6 +180,9 @@ friend class statement_async;
 friend class result_async;
 public:
 
+	LITTLE_MOLE_MONITOR(MysqlAsyncs);
+
+
 	typedef std::shared_ptr<mysql_async> Ptr;
 	typedef repro::Future<mysql_async::Ptr> FutureType;
 
@@ -232,8 +234,7 @@ public:
 
 			if (mysql_query(ptr->con(),"START TRANSACTION"))
 			{
-				prio::Resource::invalidate(ptr->mysql_);
-//				ptr->mysql_->markAsInvalid();
+				ptr->mysql_->markAsInvalid();
 				repro::Ex ex("mysql start tx failed");
 				throw ex;
 			}
@@ -256,7 +257,7 @@ public:
 	std::string quote(const std::string& s)
 	{
 		std::vector<char> buf(s.size()*2+1);
-		unsigned long len =  mysql_real_escape_string(mysql_.get(), &(buf[0]), s.c_str(), s.size());
+		unsigned long len =  mysql_real_escape_string(*mysql_, &(buf[0]), s.c_str(), s.size());
 		return std::string( &(buf[0]),len);
 	}
 

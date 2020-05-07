@@ -90,14 +90,12 @@ void Binding::bind(MYSQL_BIND& bind )
 
 Param::Param( )
 {
-	REPRO_MONITOR_INCR(mysqlParam);	
 }
 
 Param::Param( enum_field_types type, int size = 0 )
 {
 	type_ = type;
 	maxlen_ = size;
-	REPRO_MONITOR_INCR(mysqlParam);	
 }
 
 void Param::set( const char* s, enum_field_types type )
@@ -283,7 +281,6 @@ Retval::Retval(const char* name, enum_field_types type, int size )
 
 		}
 	}
-	REPRO_MONITOR_INCR(mysqlRetval);
 }
 
 
@@ -414,9 +411,6 @@ ResultSet::ResultSet(MYSQL_RES* res)
 	if(result_ != NULL) {
 		num_fields_ = mysql_num_fields(result_.get());
 	}
-
-	REPRO_MONITOR_INCR(mysqlResultSet);
-
 }
 
 char* ResultSet::operator[](size_t i)

@@ -25,13 +25,11 @@ class ResultSet
 {
 public:
 
+	LITTLE_MOLE_MONITOR(MysqlResultSets);
+
 	typedef repro::Future<ResultSet> FutureType;
 
 	ResultSet(MYSQL_RES* res);
-	~ResultSet()
-	{
-		REPRO_MONITOR_DECR(mysqlResultSet);
-	}
 
 	bool fetch();
 
@@ -40,10 +38,6 @@ public:
 	int num_fields();
 
 private:
-
-	ResultSet(const ResultSet&) = delete;
-	ResultSet& operator=(const ResultSet&) = delete;
-
 	 std::shared_ptr<MYSQL_RES> result_;
 	 int num_fields_;
 	 MYSQL_ROW row_;
@@ -91,22 +85,6 @@ protected:
 	{}
 
 
-	Binding( Binding&& rhs)
-		: type_(std::move(rhs.type_)),
-		  buf_(std::move(rhs.buf_)),
-		  maxlen_(std::move(rhs.maxlen_)),
-		  is_null_(std::move(rhs.is_null_)),
-		  is_err_(std::move(rhs.is_err_)),
-		  u_(std::move(rhs.u_))
-	{
-		rhs.is_null_        = false;
-		rhs.is_err_         = false;
-
-		rhs.buf_.reset();
-		rhs.maxlen_  	    = 0;
-		rhs.u_.longlongval_ = 0;	
-	}
-
 	enum_field_types	type_;
 	std::shared_ptr<char> buf_;
 	long unsigned int	maxlen_;
@@ -130,12 +108,10 @@ class Param : public Binding
 {
 public:
 
+	LITTLE_MOLE_MONITOR(MysqlParams);
+
 	Param();
 	Param( enum_field_types type, int size );
-	~Param()
-	{
-		REPRO_MONITOR_DECR(mysqlParam);	
-	}
 
 	void set( const std::string& s, enum_field_types type= MYSQL_TYPE_STRING);
 	void set( const char* s, enum_field_types type= MYSQL_TYPE_STRING);
@@ -210,26 +186,16 @@ class Retval : public Binding
 {
 public:
 
+	LITTLE_MOLE_MONITOR(MysqlRetvals);
+
 
 	Retval( const char* name, enum_field_types type, int size = 256 );
 
 	Retval(const Retval& rhs)
 		: Binding(rhs), name_(rhs.name_)
-	{
-		REPRO_MONITOR_INCR(mysqlRetval);	
-	}
+	{}
 
-	Retval(Retval&& rhs)
-		: Binding(std::move(rhs)), name_(std::move(rhs.name_))
-	{
-
-	} 
-
-
-	~Retval() 
-	{
-		REPRO_MONITOR_DECR(mysqlRetval);	
-	}
+	~Retval() {}
 
 	bool operator()();
 
@@ -305,8 +271,6 @@ public:
 	}
 	
 private:
-
-
 	std::string name_;
 };
 
