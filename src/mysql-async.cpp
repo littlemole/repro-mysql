@@ -8,11 +8,14 @@ namespace repromysql {
 mysql_async::mysql_async()
 	: mysql_(nullptr)
 {
+	REPRO_MONITOR_INCR(mysqlAsync);	
 }
 
 mysql_async::mysql_async(MysqlPool::ResourcePtr m)
 	: mysql_(m)
-{}
+{
+	REPRO_MONITOR_INCR(mysqlAsync);	
+}
 
 my_ulonglong mysql_async::insert_id() {
 
@@ -62,11 +65,12 @@ ResultSet::FutureType mysql_async::query(std::string sql)
 
 mysql_async::~mysql_async()
 {
+	REPRO_MONITOR_DECR(mysqlAsync);	
 }
 
 MYSQL* mysql_async::con()
 {
-	return (*mysql_);
+	return mysql_.get();
 }
 
 void mysql_async::close()
@@ -84,7 +88,7 @@ statement_async::Ptr mysql_async::prepare(std::string sql)
 
 	if ( mysql_stmt_prepare(stmt, sql.c_str(), sql.size()) )
 	{
-		mysql_->markAsInvalid();
+		prio::Resource::invalidate(mysql_);
 		throw repro::Ex("mysql_stmt_prepare failed!");
 	}
 	auto p = std::make_shared<statement_async>(shared_from_this(),stmt);
@@ -94,6 +98,7 @@ statement_async::Ptr mysql_async::prepare(std::string sql)
 
 statement_async::~statement_async()
 {
+	REPRO_MONITOR_DECR(mysqlAsyncStatement);	
 }
 
 
@@ -123,6 +128,8 @@ statement_async::statement_async(std::shared_ptr<mysql_async> con,MYSQL_STMT* st
 			params_.push_back(std::make_shared<Param>());
 		}
 	}
+
+	REPRO_MONITOR_INCR(mysqlAsyncStatement);	
 }
 
 
@@ -170,14 +177,14 @@ result_async::Ptr statement_async::query()
 
 		if (mysql_stmt_bind_param(stmt_.get(), &(bind_[0])) )
 		{
-			con()->mysql_->markAsInvalid();
+			prio::Resource::invalidate(con()->mysql_);
 			throw repro::Ex("mysql_stmt_bind_param failed!");
 		}
 	}
 
 	if (mysql_stmt_execute(stmt_.get()))
 	{
-		con()->mysql_->markAsInvalid();
+		prio::Resource::invalidate(con()->mysql_);
 		std::ostringstream oss;
 		oss << "mysql_stmt_execute failed: " << mysql_stmt_error(stmt_.get());
 		throw repro::Ex(oss.str());
@@ -199,14 +206,14 @@ mysql_async::Ptr statement_async::execute()
 
 		if (mysql_stmt_bind_param(stmt_.get(), &(bind_[0])) )
 		{
-			con()->mysql_->markAsInvalid();
+			prio::Resource::invalidate(con()->mysql_);
 			throw repro::Ex("mysql_stmt_bind_param failed!");
 		}
 	}
 
 	if (mysql_stmt_execute(stmt_.get()))
 	{
-		con()->mysql_->markAsInvalid();
+		prio::Resource::invalidate(con()->mysql_);
 
 		std::ostringstream oss;
 		oss << "mysql_stmt_execute failed: " << mysql_stmt_error(stmt_.get());
@@ -253,7 +260,7 @@ result_async::result_async(std::shared_ptr<statement_async> st)
 
 	if (mysql_stmt_store_result(st->st()))
 	{
-		con()->mysql_->markAsInvalid();
+		prio::Resource::invalidate(con()->mysql_);
 		throw repro::Ex("mysql_stmt_store_results failed!");
 	}
 
@@ -261,10 +268,13 @@ result_async::result_async(std::shared_ptr<statement_async> st)
 	{
 		if (mysql_stmt_bind_result(st_->st(), bind_.get()))
 		{
-			con()->mysql_->markAsInvalid();
+			prio::Resource::invalidate(con()->mysql_);
 			throw repro::Ex("mysql_stmt_bind_result failed!");
 		}
 	}
+
+	REPRO_MONITOR_INCR(mysqlAsyncResult);
+
 }
 
 const int result_async::fields() const
@@ -303,9 +313,9 @@ bool result_async::fetch()
 
 
 
-repro::Future<MysqlLocator::type*> MysqlLocator::retrieve(const std::string& u)
+repro::Future<MysqlLocator::type> MysqlLocator::retrieve(const std::string& u)
 {
-	auto p = repro::promise<type*>();
+	auto p = repro::promise<type>();
 
 	prio::task( [u]()
 	{
@@ -328,7 +338,7 @@ repro::Future<MysqlLocator::type*> MysqlLocator::retrieve(const std::string& u)
 
 		return con;
 	})
-	.then( [p](type* r)
+	.then( [p](type r)
 	{
 		p.resolve(r);
 	})
@@ -340,7 +350,7 @@ repro::Future<MysqlLocator::type*> MysqlLocator::retrieve(const std::string& u)
 	return p.future();
 }
 
-void MysqlLocator::free( MysqlLocator::type* t)
+void MysqlLocator::free( MysqlLocator::type t)
 {
 	mysql_close(t);
 }
