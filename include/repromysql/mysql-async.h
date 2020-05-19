@@ -278,10 +278,7 @@ repro::Future<std::shared_ptr<result_async>> MysqlPool::query(std::string sql, A
 		auto f = m->query(sql,args...) ;
 		p.resolve( f);
 	})
-	.otherwise( [p](const std::exception& ex)
-	{
-		p.reject(ex);
-	});
+	.otherwise(reject(p));
 
 	return p.future();
 }
@@ -297,10 +294,7 @@ repro::Future<mysql_async::Ptr> MysqlPool::execute(std::string sql, Args ... arg
 		auto f = m->execute(sql,args...);
 		p.resolve( f );
 	})
-	.otherwise( [p](const std::exception& ex)
-	{
-		p.reject(ex);
-	});
+	.otherwise(reject(p));
 
 	return p.future();
 }
@@ -328,30 +322,16 @@ repro::Future<> MysqlPool::tx(F fun)
 			prio::nextTick([p](){ p.resolve(); });
 
 		})
-		.otherwise( [p,m](const std::exception& ex)
+		.otherwise( [p,m](const std::exception_ptr ex)
 		{
-			std::exception_ptr eptr;
-			const repro::Ex* rex = dynamic_cast<const repro::Ex*>(&ex);
-			if ( rex)
-			{
-				eptr = rex->make_exception_ptr();
-			}
-			else
-			{
-				eptr = std::make_exception_ptr(ex);
-			}
-
 			m->rollback()
-			.then([p,eptr](mysql_async::Ptr a)
+			.then([p,ex](mysql_async::Ptr a)
 			{
-				p.reject(eptr);
+				p.reject(ex);
 			});
 		});
 	})
-	.otherwise( [p](const std::exception& ex)
-	{
-		p.reject(ex);
-	});
+	.otherwise(reject(p));
 
 	return p.future();
 }

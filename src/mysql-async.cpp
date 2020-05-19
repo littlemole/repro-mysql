@@ -342,10 +342,7 @@ repro::Future<MysqlLocator::type> MysqlLocator::retrieve(const std::string& u)
 	{
 		p.resolve(r);
 	})
-	.otherwise( [p](const std::exception& ex)
-	{
-		p.reject(ex);
-	});
+	.otherwise(reject(p));
 
 	return p.future();
 }
@@ -365,10 +362,7 @@ repro::Future<MysqlPool::ResourcePtr> MysqlPool::get()
 	{
 		p.resolve(r);
 	})
-	.otherwise( [p](const std::exception& ex)
-	{
-		p.reject(ex);
-	});
+	.otherwise(reject(p));
 
 	return p.future();
 }
@@ -387,10 +381,7 @@ repro::Future<std::shared_ptr<mysql_async>> MysqlPool::con()
 	{
 		p.resolve( std::make_shared<mysql_async>(ptr) );
 	})
-	.otherwise([p](const std::exception& ex)
-	{
-		p.reject(ex);
-	});
+	.otherwise(reject(p));
 
 	return p.future();
 }
