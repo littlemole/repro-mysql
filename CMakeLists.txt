@@ -69,6 +69,11 @@ IF (WIN32)
 
 	set(MYSQL_INCLUDE_DIRS "${MYSQL_PATH}")
 
+	message("+++++++++++++++++")
+	message("MYSQL_LIBRARY: ${MYSQL_LIBRARY}")
+	message("MYSQL_INCLUDE_DIRS: ${MYSQL_INCLUDE_DIRS}")
+	message("+++++++++++++++++")
+
 	set(LIBS ${GTEST_LIBRARIES} ${OPENSSL_LIBRARIES} ${STDLIB}  )
 
 
@@ -116,6 +121,8 @@ IF (WIN32)
 
 	message("+++++++++++++++++")
 	message("CRYPTONEATD: ${CRYPTONEATD_LIBRARY}")
+	message("MYSQL_LIBRARY: ${MYSQL_LIBRARY}")
+	message("MYSQL_INCLUDE_DIRS: ${MYSQL_INCLUDE_DIRS}")
 	message("+++++++++++++++++")
 
 		set(LIBS debug ${CMAKE_PROJECT_NAME} optimized ${CMAKE_PROJECT_NAME} debug ${PRIOCPPD_LIBRARY} optimized  ${PRIOCPP_LIBRARY} 
