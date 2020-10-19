@@ -22,7 +22,7 @@ ADD ./docker/mysql.sh /usr/local/bin/mysql.sh
 
 RUN /usr/local/bin/install.sh repro 
 RUN /usr/local/bin/install.sh prio 
-#RUN /usr/local/bin/install.sh repro-curl 
+RUN /usr/local/bin/install.sh repro-curl 
 
 RUN mkdir -p /usr/local/src/repro-mysql
 ADD . /usr/local/src/repro-mysql
