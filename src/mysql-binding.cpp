@@ -151,7 +151,7 @@ void Param::set( const std::string& s, enum_field_types type )
 		case MYSQL_TYPE_TIMESTAMP:
 		{
 			memset(&u_.timeval_,0,sizeof(MYSQL_TIME));
-			//u_.timeval_.second = value;
+
 			std::cmatch res;
 			std::regex rx("^(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d) ?(\\d\\d)?:?(\\d\\d)?:?(\\d\\d)?");
 
@@ -356,7 +356,7 @@ const std::string Retval::getString() const
 			if (is_err_)
 				return "";
 
-			return buf_.get();// std::string( buf_.get(), u_.strlen_ );
+			return buf_.get();
 		}
 		case MYSQL_TYPE_NULL:
 		{

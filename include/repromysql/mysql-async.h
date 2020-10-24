@@ -188,11 +188,6 @@ public:
 	mysql_async(MysqlPool::ResourcePtr m);
 	~mysql_async();
 
-//	FutureType execute( std::string sql);
-//	ResultSet::FutureType query(std::string sql);
-
-	//repro::Future<statement_async::Ptr> prepare(std::string sql);
-
 	statement_async::Ptr prepare(std::string sql);
 
 	template<class ...Args>
@@ -233,7 +228,6 @@ public:
 			if (mysql_query(ptr->con(),"START TRANSACTION"))
 			{
 				prio::Resource::invalidate(ptr->mysql_);
-//				ptr->mysql_->markAsInvalid();
 				repro::Ex ex("mysql start tx failed");
 				throw ex;
 			}

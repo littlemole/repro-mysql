@@ -22,46 +22,6 @@ my_ulonglong mysql_async::insert_id() {
 	return  mysql_insert_id(con());;
 }
 
-/*
-mysql_async::FutureType mysql_async::execute( std::string sql) {
-
-	Ptr ptr = shared_from_this();
-
-	return org::oha7::libevent::task( [sql,ptr] () {
-
-		if (mysql_query(ptr->con(), sql.c_str()))
-		{
-			ptr->mysql_->markAsInvalid();
-			Ex ex("mysql exec failed");
-			throw ex;
-		}
-
-		ptr->id_ = mysql_insert_id(ptr->con());
-		return ptr;
-	});
-}
-
-
-
-ResultSet::FutureType mysql_async::query(std::string sql)
-{
-	Ptr ptr = shared_from_this();
-
-	return org::oha7::libevent::task( [sql,ptr] () {
-
-		if (mysql_query(ptr->con(), sql.c_str()))
-		{
-			ptr->mysql_->markAsInvalid();
-			Ex ex("mysql query failed");
-			throw ex;
-		}
-
-		MYSQL_RES* result = mysql_store_result(ptr->con());
-
-		return ResultSet(result);
-	});
-}
-*/
 
 mysql_async::~mysql_async()
 {
